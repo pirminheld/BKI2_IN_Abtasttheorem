@@ -1,0 +1,20 @@
+.wheel-settings{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px}
+.wheel-settings .controls{min-width:0}
+.wheel-presets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
+.wheel-presets button{flex:1 1 160px}
+.wheel-scenes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.wheel-scenes .rotor-card{margin:0;min-width:0;text-align:center}
+.rotor-card h3{font-size:1.05rem;min-height:1.6em}
+.rotor-card p{font-size:.9rem;min-height:3em}
+.rotor-view svg{display:block;width:100%;max-width:280px;margin:18px auto}
+.wheel-scenes .rotor-card:last-child{border-color:#d7aa70;background:#fffaf3}
+.strip-title{margin-top:24px}
+.frame-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:14px}
+.frame-strip figure{margin:0;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--soft);text-align:center}
+.frame-strip svg{display:block;width:100%;max-width:125px;margin:auto}
+.frame-strip figcaption{font-size:.8rem;font-weight:600}
+.frame-strip figcaption span{font-weight:400;color:var(--muted)}
+#wheel-status{margin-top:14px}
+@media(max-width:900px){.wheel-scenes{gap:10px}.wheel-scenes .card{padding:12px}.rotor-card h3{min-height:3em}.rotor-card p{min-height:4.5em}}
+@media(max-width:600px){.wheel-settings{grid-template-columns:1fr}.wheel-scenes{grid-template-columns:1fr}.rotor-card h3,.rotor-card p{min-height:0}.rotor-view svg{max-width:225px;margin:12px auto}.frame-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media print{.wheel-settings{display:none}.wheel-scenes{grid-template-columns:repeat(3,1fr)}.rotor-view svg{max-width:180px}}

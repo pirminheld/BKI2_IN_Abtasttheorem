@@ -7,11 +7,12 @@
   function plot(m,{showOriginal=true,count=m.points.length,alternate=null,cursor=false,label='Abtastpunkte und Signal'}={}){
     const x=t=>58+t/m.duration*650,y=u=>264-u*58;
     let s=`<svg class="plot" viewBox="0 0 770 325" role="img" aria-label="${label}"><title>${label}</title>`;
-    const tick=m.duration===8?1:2;
+    const tick=m.duration===8?1:m.duration/10;
     for(let t=0;t<=m.duration;t+=tick)s+=line(x(t),58,x(t),264,'grid')+text(x(t),287,fmt(t),'text-anchor="middle"');
     for(let u=0;u<=3;u++)s+=line(58,y(u),708,y(u),'grid')+text(46,y(u)+5,u,'text-anchor="end"');
     s+=line(58,264,724,264,'axis')+line(58,264,58,48,'axis')+text(58,27,'Spannung Uₑ / V')+text(724,315,'Zeit t / ms','text-anchor="end"');
-    const path=fn=>Array.from({length:801},(_,i)=>{const t=i*m.duration/800;return `${i?'L':'M'}${x(t).toFixed(2)},${y(fn(t)).toFixed(2)}`;}).join(' ');
+    const resolution=Math.max(800,Math.ceil(m.duration*m.f/1000*40));
+    const path=fn=>Array.from({length:resolution+1},(_,i)=>{const t=i*m.duration/resolution;return `${i?'L':'M'}${x(t).toFixed(2)},${y(fn(t)).toFixed(2)}`;}).join(' ');
     if(showOriginal)s+=`<path d="${path(t=>M.signal(t,m.f))}" class="signal"/>`;
     if(alternate)s+=`<path d="${path(alternate.value)}" class="alias"/>`;
     m.points.slice(0,count).forEach(p=>{s+=line(x(p.t),264,x(p.t),y(p.u),'stem')+`<circle cx="${x(p.t)}" cy="${y(p.u)}" r="5" class="sample"/>`;});
@@ -51,25 +52,28 @@
   $('compare-reset').addEventListener('click',resetCompare);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   function renderLab(){
-    const m=M.sample(Number($('rate').value),Number($('offset').value),20),a=M.alias(m),show=$('show-alias').checked;
+    const m=M.sample(Number($('rate').value),Number($('offset').value),Number($('window').value),Number($('frequency').value)),a=M.alias(m),show=$('show-alias').checked;
     $('rate-output').textContent=fmt(m.rate)+' Hz';
-    $('lab-chart').innerHTML=plot(m,{alternate:show?a:null,label:'Originalsignal mit 250 Hertz, Messpunkte und optional ein weiteres passendes Signal'});
-    $('lab-results').innerHTML=metric('Abtastintervall Tₐ',fmt(m.interval)+' ms','fₐ = '+fmt(m.rate)+' Hz')+metric('Grenze 2 · fmax','500 Hz','fmax = 250 Hz')+metric('Abtastintervalle je Periode',fmt(m.ratio),'fₐ / f');
+    $('frequency-output').textContent=fmt(m.f)+' Hz';
+    $('original-label').textContent='Original · '+fmt(m.f)+' Hz';
+    $('lab-chart').innerHTML=plot(m,{showOriginal:$('lab-original').checked,alternate:show?a:null,label:`Sinussignal mit ${fmt(m.f)} Hertz, Messpunkte und optional ein passender Aliasverlauf`});
+    $('lab-results').innerHTML=metric('Signalfrequenz f',fmt(m.f)+' Hz','T = '+fmt(m.period)+' ms')+metric('Abtastfrequenz fₐ',fmt(m.rate)+' Hz','Tₐ = '+fmt(m.interval)+' ms')+metric('Scheinbare Frequenz',a?fmt(a.frequency)+' Hz':m.kind==='boundary'?'Grenzfall':fmt(m.f)+' Hz',a?'Passend zu denselben Messwerten':m.kind==='boundary'?'Keine eindeutige Rekonstruktion':'Kein langsamerer Alias');
     $('lab-status').className='event '+(m.kind==='sufficient'?'good':'caution');
-    $('lab-status').textContent=m.kind==='sufficient'?`${fmt(m.rate)} Hz > 500 Hz: Die Bedingung ist erfüllt, sofern keine Signalanteile oberhalb von 250 Hz vorhanden sind.`:m.kind==='boundary'?'500 Hz = 2 · 250 Hz: Genau auf der Grenze. Das Ergebnis hängt von der Lage der Abtastzeitpunkte ab.':`${fmt(m.rate)} Hz < 500 Hz: Die Abtastrate ist zu gering für die allgemeine Rekonstruktion eines Signals mit Anteilen bis 250 Hz.`;
+    $('lab-status').textContent=m.kind==='sufficient'?`${fmt(m.rate)} Hz > 2 · ${fmt(m.f)} Hz: Die Bedingung ist erfüllt, sofern keine Signalanteile oberhalb von ${fmt(m.f)} Hz vorhanden sind.`:m.kind==='boundary'?`${fmt(m.rate)} Hz = 2 · ${fmt(m.f)} Hz: Genau auf der Grenze. Das Ergebnis hängt von der Lage der Abtastzeitpunkte ab.`:`Aliasing: ${fmt(m.rate)} Hz < 2 · ${fmt(m.f)} Hz. Die Abtastfrequenz ist zu gering. Unterschiedliche Verläufe passen zu denselben Messwerten.`;
     $('alias-status').hidden=!show;
     if(a)$('alias-status').textContent=a.frequency===0?`Auch eine konstante Spannung von ${fmt(a.value(0))} V passt zu allen Messpunkten.`:`Eine weitere Schwingung mit ${fmt(a.frequency)} Hz passt zu denselben Messpunkten. Die orange Kurve trifft jeden grünen Punkt.`;
-    else $('alias-status').textContent=m.kind==='boundary'?'Bei dieser Startlage ergibt sich keine konstante Messreihe. Der Grenzfall bleibt dennoch keine verlässliche allgemeine Einstellung. Prüfen Sie zusätzlich die Startzeit 0 ms.':'Für die vorausgesetzte Bandbegrenzung auf 250 Hz ist die Abtastrate ausreichend. Deshalb wird hier kein langsamerer Aliasverlauf eingeblendet.';
+    else $('alias-status').textContent=m.kind==='boundary'?'Bei dieser Startlage ergibt sich keine konstante Messreihe. Der Grenzfall bleibt dennoch keine verlässliche allgemeine Einstellung. Prüfen Sie zusätzlich die Startzeit 0 ms.':`Für die vorausgesetzte Bandbegrenzung auf ${fmt(m.f)} Hz ist die Abtastrate ausreichend. Deshalb wird hier kein langsamerer Aliasverlauf eingeblendet.`;
   }
-  $('rate').addEventListener('input',renderLab);$('offset').addEventListener('change',renderLab);$('show-alias').addEventListener('change',renderLab);
+  ['rate','frequency'].forEach(id=>$(id).addEventListener('input',renderLab));
+  ['offset','window','show-alias','lab-original'].forEach(id=>$(id).addEventListener('change',renderLab));
   document.querySelectorAll('[data-rate]').forEach(b=>b.addEventListener('click',()=>{$('rate').value=b.dataset.rate;renderLab();}));
-  $('lab-reset').addEventListener('click',()=>{$('rate').value='400';$('offset').value='0';$('show-alias').checked=false;renderLab();});
+  $('lab-reset').addEventListener('click',()=>{$('frequency').value='250';$('rate').value='400';$('offset').value='0';$('window').value='20';$('show-alias').checked=true;$('lab-original').checked=true;renderLab();});
   $('rule-reveal').addEventListener('click',()=>{const visible=$('theorem').hidden;$('theorem').hidden=!visible;$('rule-reveal').setAttribute('aria-expanded',String(visible));$('rule-reveal').textContent=visible?'Abtasttheorem ausblenden':'Abtasttheorem aufdecken';});
   $('check-choice').addEventListener('click',()=>{const chosen=document.querySelector('input[name="choice"]:checked');$('choice-feedback').className='event';if(!chosen){$('choice-feedback').textContent='Bitte wählen Sie zunächst eine Abtastfrequenz.';return;}const ok=chosen.value==='1000';$('choice-feedback').classList.add(ok?'good':'caution');$('choice-feedback').textContent=ok?'Richtig: 1000 Hz > 2 · 300 Hz. 500 Hz liegt darunter; 600 Hz liegt genau auf der Grenze.':chosen.value==='600'?'600 Hz ist genau das Doppelte. Die allgemeine Bedingung verlangt mehr als 600 Hz.':'500 Hz liegt unter 2 · 300 Hz = 600 Hz. Die Abtastfrequenz muss größer als 600 Hz sein.';});
   const resetFeedback=()=>{$('choice-feedback').className='event';$('choice-feedback').textContent='Noch keine Auswahl geprüft.';};
   $('choice-reset').addEventListener('click',()=>{document.querySelectorAll('input[name="choice"]').forEach(i=>i.checked=false);resetFeedback();});
   document.querySelectorAll('input[name="choice"]').forEach(i=>i.addEventListener('change',resetFeedback));
-  function panel(id){if(!['problem','compare','lab','rule'].includes(id))id='problem';stop();document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==id);document.querySelectorAll('[data-panel]').forEach(b=>{const active=b.dataset.panel===id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});}
+  function panel(id){if(!['problem','compare','lab','wheel','rule'].includes(id))id='problem';stop();document.dispatchEvent(new Event('panelchange'));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==id);document.querySelectorAll('[data-panel]').forEach(b=>{const active=b.dataset.panel===id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});}
   function navigate(id){panel(id);history.replaceState(null,'','#'+id);}
   document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.panel)));
   $('to-compare').addEventListener('click',()=>{navigate('compare');$('compare-title').scrollIntoView({block:'start'});});

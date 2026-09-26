@@ -15,4 +15,27 @@ assert.equal(M.alias(M.sample(400,0,20)).frequency,150);checks++;
 assert.equal(M.sample(500).kind,'boundary');checks++;
 assert.equal(M.alias(M.sample(500,1)),null);checks++;
 for(const args of [[0],[-1],[NaN],[250,-1],[250,9,8],[Infinity],[250,0,8,0],[10000000,0,20]]){assert.throws(()=>M.sample(...args),RangeError);checks++;}
+// Expanded signal controls, including a short window with only one boundary sample.
+assert.equal(M.alias(M.sample(50,1,20,25)),null);checks++;
+for(const f of [25,50,250,600,975,1000])for(const rate of [25,50,100,400,500,1000,2000,3000])for(const start of [0,.5,1]){
+ const m=M.sample(rate,start,100,f),a=M.alias(m);
+ if(a)m.points.forEach(p=>near(a.value(p.t),p.u));
+ if(m.kind==='undersampled'){assert.ok(a.frequency<=rate/2+1e-9);checks++;}
+}
+for(const [f,rate,expected] of [[9,10,-1],[10,10,0],[11,10,1],[5,12,5],[5,10,-5]]){
+ near(M.rotor(f,rate).signed,expected);
+}
+assert.equal(M.rotor(5,10).boundary,true);checks++;
+for(let f=1;f<=15;f+=.5)for(const rate of [2,5,10,12,20,40])for(let frame=0;frame<=20;frame++){
+ const m=M.rotor(f,rate,frame/rate);
+ // Angles are circular: 0 and 360 degrees describe the same pose.
+ const difference=(a,b)=>Math.atan2(Math.sin((a-b)*Math.PI/180),Math.cos((a-b)*Math.PI/180));
+ near(difference(m.actualAngle,m.apparentAngle),0);
+ near(difference(m.actualAngle,m.sampleAngle),0);
+ assert.equal(m.frame,frame);checks++;
+ const between=M.rotor(f,rate,(frame+.4)/rate);
+ near(difference(between.sampleAngle,m.sampleAngle),0);
+ assert.ok(Math.abs(m.signed)<=rate/2+1e-9);checks++;
+}
+for(const args of [[0,10],[9,0],[NaN,10],[9,10,-1]]){assert.throws(()=>M.rotor(...args),RangeError);checks++;}
 console.log(`${checks} fachliche Prüfungen bestanden.`);

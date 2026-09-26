@@ -13,13 +13,20 @@
     // A lower-frequency sinusoid that agrees at t = start + k/rate.
     if(m.kind==='sufficient')return null;
     if(m.kind==='boundary'){
-      const constant=m.points.every(p=>Math.abs(p.u-m.points[0].u)<1e-9);
-      return constant?{frequency:0,value:()=>m.points[0].u}:null;
+      const constant=Math.abs(Math.sin(2*Math.PI*m.f*m.start/1000))<1e-9;
+      return constant?{frequency:0,value:()=>2}:null;
     }
     const signed=m.f-Math.round(m.f/m.rate)*m.rate;
     const phase=2*Math.PI*(m.f-signed)*m.start/1000;
-    return {frequency:Math.abs(signed),value:t=>2+Math.sin(2*Math.PI*signed*t/1000+phase)};
+    return {frequency:Math.abs(signed),signed,phase,value:t=>2+Math.sin(2*Math.PI*signed*t/1000+phase)};
   }
-  const api={signal,sample,alias};
+  function rotor(f,rate,t=0){
+    if(![f,rate,t].every(Number.isFinite)||f<=0||rate<=0||t<0)throw new RangeError('Ungültige Propellerwerte');
+    const signed=f-Math.round(f/rate)*rate;
+    const frame=Math.floor(t*rate+1e-9),sampleTime=frame/rate;
+    const angle=turns=>((turns%1)+1)%1*360;
+    return {f,rate,signed,frame,sampleTime,actualAngle:angle(f*t),sampleAngle:angle(f*sampleTime),apparentAngle:angle(signed*t),step:360*signed/rate,boundary:Math.abs(Math.abs(signed)-rate/2)<1e-9};
+  }
+  const api={signal,sample,alias,rotor};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.Sampling=Object.freeze(api);
 })(typeof window!=='undefined'?window:this);
