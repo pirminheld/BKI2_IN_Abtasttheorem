@@ -9,7 +9,7 @@ Homepage zum 45-minütigen Unterrichtsbesuch am 30.09.2026. Homepage: https://pi
 1. Messproblem: nur drei Messpunkte sichtbar; tatsächliches Signal per Knopfdruck aufdecken.
 2. A/B/C: Abtastintervalle 4/2/1 ms, einzeln oder automatisch erfassen, Tabelle; bei B Startzeit auf 1 ms verschieben.
 3. [Aliasinglabor](https://pirminheld.github.io/BKI2_IN_Abtasttheorem/#lab): Signalfrequenz 25–1000 Hz und Abtastfrequenz 25–3000 Hz unabhängig einstellen; Startzeit und Zeitfenster wählen. Bei Unterabtastung erscheint automatisch eine orange Sinuskurve, die zu allen Messpunkten passt. Original und Alias lassen sich einzeln ausblenden.
-4. [Propeller](https://pirminheld.github.io/BKI2_IN_Abtasttheorem/#wheel): Wagon-Wheel-Effekt mit tatsächlicher Drehung, gehaltenen Kamerabildern und einer scheinbaren Bewegung. Drehfrequenz und Bildrate sind veränderlich. Vier Voreinstellungen, Pause, Einzelschritt und die letzten sechs Aufnahmen unterstützen den Vergleich.
+4. [Propeller](https://pirminheld.github.io/BKI2_IN_Abtasttheorem/#wheel): Ein automatisch laufender Propeller mit Drehfrequenzregler von 0 bis 15 Hz und fester Modell-Abtastrate von 12 Hz. Die Drehzahl lässt sich im Lauf ändern, ohne die Bewegung oder Messhistorie zurückzusetzen. Darunter erscheint der zugehörige Signalverlauf mit Abtastpunkten und Alias-Kurve. Pause und ein Vergleich mit der tatsächlichen Drehung sind möglich.
 5. Sicherung: Abtasttheorem aufdecken und Auswahlaufgabe zu fmax = 300 Hz prüfen.
 
 `Arbeitsblatt.pdf` ist die unveränderte zweiseitige Schülerfassung. Die Musterlösung wird nicht veröffentlicht. `QR_Code.png` führt zur Homepage. Im lokalen Arbeitsblattordner liegt eine Internetverknüpfung.
@@ -22,7 +22,9 @@ Für Unterabtastung wird ein passender Alias mit vorzeichenbehafteter Frequenz f
 
 Fachlicher Hintergrund: [NI: Acquiring an Analog Signal – Nyquist Sampling Theorem and Aliasing](https://www.ni.com/en/shop/data-acquisition/measurement-fundamentals/analog-fundamentals/acquiring-an-analog-signal--bandwidth--nyquist-sampling-theorem-.html), Abschnitt Sample Rate. Eigene Aufgaben, Diagramme und Berechnungen.
 
-Beim Propeller wird ein markiertes Blatt verfolgt. Die scheinbare Drehfrequenz lautet f' = f − round(f/fa) · fa; ein negatives Vorzeichen bedeutet Rückwärtslauf. Reale und interpretierte Stellung stimmen an jedem Aufnahmezeitpunkt überein. Bei |f'| = fa/2 ist die Richtung mehrdeutig. Die mittlere Ansicht hält das letzte Kamerabild; rechts wird die kürzeste passende Drehung kontinuierlich ergänzt. Alle Ansichten laufen mit 0,1-facher Modellgeschwindigkeit. Unmarkierte identische Blätter, Belichtungszeit und Rolling Shutter sind nicht Teil des Modells. Hintergrund: [UC Davis: Temporal Aliasing – The Wagon Wheel Effect](https://www.cs.ucdavis.edu/~koehl/Teaching/ECS17/Chapters/Chapter1/wagon.html).
+Beim Propeller wird ein markiertes Blatt verfolgt. `propeller-model.js` integriert die tatsächliche Drehstellung über die Zeit. Änderungen der Drehfrequenz erhalten Phase, Zeit und bisherige Messwerte. Aufnahmen erfolgen weiterhin auf dem festen Raster k/12 s. Aus aufeinanderfolgenden erfassten Drehstellungen entsteht jeweils die kürzeste mögliche Drehung; ihre Sinusprojektion liefert die orange Kurve. Bei konstanter Drehzahl entspricht dies f' = f − round(f/12) · 12. Ein negatives Vorzeichen bedeutet Rückwärtslauf. Reale und interpretierte Stellung stimmen an jedem Aufnahmezeitpunkt überein. Eine halbe Umdrehung ist mehrdeutig.
+
+Propeller und Signal verwenden dieselbe interpolierte Phase. Zur Darstellung zwischen zwei bereits erfassten Bildern wird die Anzeige um ein Abtastintervall verzögert. Der Verlauf zeigt die letzten zwei Modellsekunden; gespeicherte Messwerte und Frequenzsegmente werden nach drei Sekunden begrenzt. Die Animation läuft in vierfacher Zeitlupe und pausiert in ausgeblendeten Bereichen oder Hintergrund-Tabs. Bei einer Systemeinstellung für reduzierte Bewegung startet sie pausiert. Die feste Modellrate von 12 Hz ist keine Behauptung über eine Bildrate des menschlichen Auges. Unmarkierte identische Blätter, Belichtungszeit und Rolling Shutter sind nicht Teil des Modells. Hintergrund: [UC Davis: Temporal Aliasing – The Wagon Wheel Effect](https://www.cs.ucdavis.edu/~koehl/Teaching/ECS17/Chapters/Chapter1/wagon.html).
 
 ## Gestaltung und Prüfung
 
@@ -30,6 +32,8 @@ Beim Propeller wird ein markiertes Blatt verfolgt. Die scheinbare Drehfrequenz l
 
 `node test.cjs`: 26.527 bestandene Prüfungen zu Abtastpunkten, Frequenzgrenzen, Aliaswerten auch bei verschobenen Startzeiten, Propellerrichtungen und übereinstimmenden Winkelstellungen an den Aufnahmezeitpunkten.
 
-`python test-browser.py`: Bedienprüfung mit Python Playwright und installiertem Chrome. Prüft A/B/C, beide Frequenzregler, Sichtbarkeit der Kurven, Grenzfälle, Propelleranimation und Einzelschritte, Voreinstellungen, Zurücksetzen, Tastaturbedienung, Navigation und Darstellung bei 1440, 768 und 390 Pixeln Breite. Ohne `SITE_URL` wird die lokale Datei geöffnet; mit dieser Umgebungsvariable lässt sich die veröffentlichte Seite prüfen. Screenshots liegen im ignorierten Ordner `tmp/`.
+`node test-propeller.cjs`: 160.900 Prüfungen des neuen dynamischen Propellermodells; insbesondere feste Abtastzeitpunkte bei Drehzahländerungen, Erhalt der Drehstellung und Messwerte sowie passende Aliaswerte an allen Aufnahmen.
+
+`python test-browser.py`: Bedienprüfung mit Python Playwright und installiertem Chrome. Prüft die bisherigen Bereiche, automatische Propelleranimation, Drehzahländerungen ohne Neustart, Rückwärtslauf, Stillstand, Grenzfall, Pause/Fortsetzen und Übereinstimmung von Propellerwinkel und Signalmarkierung. Dazu Navigation und Darstellung bei 1440, 768 und 390 Pixeln Breite. Ohne `SITE_URL` wird die lokale Datei geöffnet; mit dieser Umgebungsvariable lässt sich die veröffentlichte Seite prüfen. Screenshots liegen im ignorierten Ordner `tmp/`.
 
 Nutzung und rechtliche Angaben: siehe `impressum.html`.

@@ -1,20 +1,35 @@
-.wheel-settings{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px}
-.wheel-settings .controls{min-width:0}
-.wheel-presets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
-.wheel-presets button{flex:1 1 160px}
-.wheel-scenes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.wheel-scenes .rotor-card{margin:0;min-width:0;text-align:center}
-.rotor-card h3{font-size:1.05rem;min-height:1.6em}
-.rotor-card p{font-size:.9rem;min-height:3em}
-.rotor-view svg{display:block;width:100%;max-width:280px;margin:18px auto}
-.wheel-scenes .rotor-card:last-child{border-color:#d7aa70;background:#fffaf3}
-.strip-title{margin-top:24px}
-.frame-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:14px}
-.frame-strip figure{margin:0;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--soft);text-align:center}
-.frame-strip svg{display:block;width:100%;max-width:125px;margin:auto}
-.frame-strip figcaption{font-size:.8rem;font-weight:600}
-.frame-strip figcaption span{font-weight:400;color:var(--muted)}
-#wheel-status{margin-top:14px}
-@media(max-width:900px){.wheel-scenes{gap:10px}.wheel-scenes .card{padding:12px}.rotor-card h3{min-height:3em}.rotor-card p{min-height:4.5em}}
-@media(max-width:600px){.wheel-settings{grid-template-columns:1fr}.wheel-scenes{grid-template-columns:1fr}.rotor-card h3,.rotor-card p{min-height:0}.rotor-view svg{max-width:225px;margin:12px auto}.frame-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media print{.wheel-settings{display:none}.wheel-scenes{grid-template-columns:repeat(3,1fr)}.rotor-view svg{max-width:180px}}
+#wheel .wheel-top{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(300px,1.15fr);gap:40px;align-items:center}
+#wheel .wheel-stage{text-align:center;min-width:0;background:radial-gradient(ellipse,#eaf3fb 0%,#fff 70%);padding:12px;border-radius:16px}
+#wheel .wheel-view-label{font-weight:650;color:var(--accent)}
+#wheel .wheel-rotor svg{display:block;width:100%;max-width:300px;margin:8px auto}
+#wheel .wheel-stage p{font-weight:600;color:#975400;min-height:1.5em}
+#wheel .wheel-controls{min-width:0}
+#wheel .wheel-controls>label:first-child{font-weight:600;display:block}
+#wheel output{display:block;font-size:2rem;color:var(--accent);font-weight:700}
+#wheel input[type=range]{width:100%;accent-color:var(--accent);margin:18px 0 4px;min-height:30px;cursor:pointer}
+#wheel .wheel-scale{position:relative;height:22px;font-size:.75rem;color:var(--muted)}
+#wheel .wheel-scale span{position:absolute;top:0;transform:translateX(-50%)}
+#wheel .wheel-scale span:nth-child(1){left:0;transform:none}
+#wheel .wheel-scale span:nth-child(2){left:40%}
+#wheel .wheel-scale span:nth-child(3){left:80%}
+#wheel .wheel-scale span:nth-child(4){right:0;transform:none}
+#wheel .wheel-readouts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+#wheel .wheel-readouts>div{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px;min-width:0}
+#wheel .wheel-readouts span,#wheel .wheel-readouts small{display:block;font-size:.85rem;color:var(--muted)}
+#wheel .wheel-readouts strong{display:block;font-size:1.5rem;color:var(--accent);margin:4px 0}
+#wheel .wheel-readouts>div:last-child{background:#fff6e9;border-color:#e5c69e}
+#wheel .wheel-readouts>div:last-child strong{color:#975400}
+#wheel .wheel-signal-head{border-top:1px solid var(--border);padding-top:18px;margin-top:24px}
+#wheel .wheel-signal-head p{font-size:.9rem;color:var(--muted)}
+#wheel .wheel-signal{overflow-x:auto;margin-top:12px}
+#wheel .wheel-signal svg{width:100%;min-width:600px;display:block;max-height:290px}
+#wheel .wheel-signal text{font:14px 'Segoe UI',Arial,sans-serif;fill:var(--muted)}
+#wheel .wheel-signal .grid{stroke:#dbe3ee;stroke-width:1}
+#wheel .wheel-signal .actual-wave{fill:none;stroke:#005a9e;stroke-width:2.4}
+#wheel .wheel-signal .alias-wave{fill:none;stroke:#be6a00;stroke-width:3;stroke-dasharray:7 4}
+#wheel .wheel-signal .sample{fill:#007b65;stroke:white;stroke-width:1.5}
+#wheel .wheel-signal .now-line{stroke:#6b7787;stroke-width:1.5;stroke-dasharray:4 4}
+#wheel #wheel-status{margin-top:14px}
+@media(max-width:750px){#wheel .wheel-top{grid-template-columns:1fr;gap:16px}#wheel .wheel-rotor svg{max-width:220px}#wheel .wheel-stage{padding:0}#wheel .wheel-controls output{font-size:1.65rem}}
+@media(max-width:540px){#wheel .wheel-signal:before{content:'↔ Signalverlauf seitlich verschieben';display:block;color:var(--muted);font-size:.8rem;position:sticky;left:0}#wheel .wheel-readouts{gap:8px}#wheel .wheel-readouts strong{font-size:1.25rem}}
+@media print{#wheel .wheel-top{grid-template-columns:1fr 1fr}#wheel .wheel-signal svg{min-width:0}}
