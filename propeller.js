@@ -16,7 +16,7 @@
     svg+='<text x="55" y="23">Signal U / V</text><text x="875" y="278" text-anchor="end">Modellzeit t / s</text>';
     const path=(a,b,fn,steps)=>Array.from({length:steps+1},(_,i)=>{const s=a+(b-a)*i/steps;return `${i?'L':'M'}${x(s).toFixed(2)},${y(M.voltage(fn(s))).toFixed(2)}`;}).join(' ');
     const until=Math.min(end,motion.time);
-    svg+=`<path d="${path(start,until,s=>motion.phaseAt(s),1000)}" class="actual-wave"/>`;
+    svg+=`<path d="${path(start,until,s=>motion.phaseAt(s),3200)}" class="actual-wave"/>`;
     for(let i=1;i<motion.samples.length;i++){
       const a=motion.samples[i-1],b=motion.samples[i],lo=Math.max(start,a.t),hi=Math.min(end,b.t);
       if(hi>lo&&Math.abs(b.trueDelta-b.delta)>1e-8){
@@ -41,8 +41,8 @@
     $('wheel-apparent-output').textContent=fmt(Math.abs(rate),1)+' U/s';
     $('wheel-apparent-detail').textContent=direction;
     $('rotation-output').textContent=fmt(motion.f,1)+' Hz · '+fmt(motion.f*60,0)+' U/min';
-    const status=motion.f===0?'Der Motor steht. Erhöhen Sie die Drehfrequenz langsam.':motion.f<6?'Unter 6 Hz: Die kürzeste Bewegung zwischen den Abtastbildern folgt der tatsächlichen Drehrichtung.':motion.f===6?'Grenzfall bei 6 Hz: Vorwärts und rückwärts passen gleichermaßen zu den erfassten Stellungen.':motion.f===12?'Bei 12 Hz: Zwischen zwei Abtastungen liegt eine volle Umdrehung. Der Propeller erscheint nach dem Übergang still.':'Über 6 Hz: Zeitliches Aliasing. Die beobachtete Bewegung kann langsamer, rückwärts oder still erscheinen.';
-    if(status!==previousStatus){$('wheel-status').textContent=status;$('wheel-status').className='event '+(motion.f<6?'good':'caution');previousStatus=status;}
+    const status=motion.f===0?'Der Motor steht. Erhöhen Sie die Drehfrequenz langsam.':motion.f<M.RATE/2?'Unter 15 Hz: Die kürzeste Bewegung zwischen den Abtastbildern folgt der tatsächlichen Drehrichtung.':motion.f===M.RATE/2?'Grenzfall bei 15 Hz: Vorwärts und rückwärts passen gleichermaßen zu den erfassten Stellungen.':motion.f===M.RATE?'Bei 30 Hz: Zwischen zwei Abtastungen liegt eine volle Umdrehung. Der Propeller erscheint nach dem Übergang still.':'Über 15 Hz: Zeitliches Aliasing. Die beobachtete Bewegung kann langsamer, rückwärts oder still erscheinen.';
+    if(status!==previousStatus){$('wheel-status').textContent=status;$('wheel-status').className='event '+(motion.f<M.RATE/2?'good':'caution');previousStatus=status;}
     plot();
   }
   function stop(){if(request!==null)cancelAnimationFrame(request);request=null;last=null;}

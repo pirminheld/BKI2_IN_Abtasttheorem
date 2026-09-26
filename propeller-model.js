@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const RATE=12,INTERVAL=1/RATE,TAU=2*Math.PI;
+  const RATE=30,INTERVAL=1/RATE,TAU=2*Math.PI;
   const voltage=turns=>2+Math.sin(TAU*turns);
   const fold=turns=>turns-Math.floor(turns+.5+1e-10);
   class Motion {
@@ -11,7 +11,7 @@
       this.setFrequency(f);
     }
     setFrequency(f){
-      if(!Number.isFinite(f)||f<0||f>15)throw new RangeError('Drehfrequenz muss zwischen 0 und 15 Hz liegen.');
+      if(!Number.isFinite(f)||f<0||f>40)throw new RangeError('Drehfrequenz muss zwischen 0 und 40 Hz liegen.');
       this.f=f;
       const s={t:this.time,turns:this.turns,f};
       if(this.segments.at(-1).t===this.time)this.segments[this.segments.length-1]=s;

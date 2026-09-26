@@ -10,8 +10,8 @@
 #wheel .wheel-scale{position:relative;height:22px;font-size:.75rem;color:var(--muted)}
 #wheel .wheel-scale span{position:absolute;top:0;transform:translateX(-50%)}
 #wheel .wheel-scale span:nth-child(1){left:0;transform:none}
-#wheel .wheel-scale span:nth-child(2){left:40%}
-#wheel .wheel-scale span:nth-child(3){left:80%}
+#wheel .wheel-scale span:nth-child(2){left:37.5%}
+#wheel .wheel-scale span:nth-child(3){left:75%}
 #wheel .wheel-scale span:nth-child(4){right:0;transform:none}
 #wheel .wheel-readouts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
 #wheel .wheel-readouts>div{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px;min-width:0}
